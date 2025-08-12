@@ -5,15 +5,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
-//@RestController
+@RestController
 public class HelloWorldController {
 
     @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
-    @GetMapping(path = "/hello-world")
-    public String helloWorld() {
-        return "Hello World";
+    @GetMapping(path = "/basicauth")
+    public String basicAuthCheck() {
+        return "Success";
     }
-
 
     @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
     @GetMapping(path = "/hello-world-bean")
