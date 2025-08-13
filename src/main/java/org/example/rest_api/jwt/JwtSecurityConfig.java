@@ -58,12 +58,15 @@ public class JwtSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.
                         sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer(
-                        OAuth2ResourceServerConfigurer::jwt)
-                .httpBasic(
-                        Customizer.withDefaults())
-                .headers(header -> {header.
-                        frameOptions().sameOrigin();})
+                //.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
+                .httpBasic(Customizer.withDefaults())
+                //.headers(header -> {header.frameOptions().sameOrigin();})
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions
+                                .sameOrigin()
+                        )
+                )
                 .build();
     }
 
@@ -77,8 +80,8 @@ public class JwtSecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        UserDetails user = User.withUsername("in28minutes")
-                .password("{noop}dummy")
+        UserDetails user = User.withUsername("username")
+                .password("{noop}kibria")
                 .authorities("read")
                 .roles("USER")
                 .build();
