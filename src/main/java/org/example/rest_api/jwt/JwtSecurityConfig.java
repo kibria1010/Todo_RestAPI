@@ -29,6 +29,9 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import com.nimbusds.jose.JOSEException;
@@ -36,6 +39,8 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -55,21 +60,35 @@ public class JwtSecurityConfig {
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-                .csrf(AbstractHttpConfigurer::disable)
+
+                .csrf(csrf -> csrf.disable())
+                //.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 .sessionManagement(session -> session.
                         sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                //.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
+
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()))
+
                 .httpBasic(Customizer.withDefaults())
-                //.headers(header -> {header.frameOptions().sameOrigin();})
-                .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions
-                                .sameOrigin()
-                        )
-                )
+
+                .headers(headers -> headers.frameOptions(frameOptionsConfig-> frameOptionsConfig.disable()))
+
                 .build();
     }
+/*
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("http://localhost:3000"); // Allow specific origin
+        configuration.addAllowedMethod("*"); // Allow all HTTP methods
+        configuration.addAllowedHeader("*"); // Allow all headers
+        configuration.setAllowCredentials(true); // Allow sending credentials (cookies, auth headers)
 
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration); // Apply to all paths
+        return source;
+    }
+*/
     @Bean
     public AuthenticationManager authenticationManager(
             UserDetailsService userDetailsService) {

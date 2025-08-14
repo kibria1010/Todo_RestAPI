@@ -1,5 +1,6 @@
 package org.example.rest_api.jwt;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,8 +15,7 @@ public class JwtAuthenticationController {
 
     private final AuthenticationManager authenticationManager;
 
-    public JwtAuthenticationController(JwtTokenService tokenService,
-                                       AuthenticationManager authenticationManager) {
+    public JwtAuthenticationController(JwtTokenService tokenService, AuthenticationManager authenticationManager) {
         this.tokenService = tokenService;
         this.authenticationManager = authenticationManager;
     }

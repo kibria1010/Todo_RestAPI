@@ -19,12 +19,14 @@ public class RestApiApplication {
         return new WebMvcConfigurer() {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedMethods("/*")
+                        .allowedMethods("*")
                         .allowedOrigins("http://localhost:3000")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE");
-
+                        //.allowedMethods("GET", "POST", "PUT", "DELETE")
+                        //.allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }
 
 }
+

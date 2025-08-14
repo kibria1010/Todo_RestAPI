@@ -10,7 +10,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 //@Configuration
 public class BasicAuthenticationSecurityConfiguration {
-
+/*
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -31,4 +31,6 @@ public class BasicAuthenticationSecurityConfiguration {
 
         return http.build();
     }
+
+ */
 }
