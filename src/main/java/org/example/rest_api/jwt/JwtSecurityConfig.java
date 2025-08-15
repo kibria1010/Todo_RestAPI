@@ -18,7 +18,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,11 +26,10 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
+import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import com.nimbusds.jose.JOSEException;
@@ -47,15 +45,14 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity
 public class JwtSecurityConfig {
 
+    /*
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, HandlerMappingIntrospector introspector) throws Exception {
 
-        // h2-console is a servlet
-        // https://github.com/spring-projects/spring-security/issues/12310
         return httpSecurity
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/authenticate").permitAll()
-                        //.requestMatchers(PathRequest.toH2Console()).permitAll() // h2-console is a servlet and NOT recommended for a production
+                        .requestMatchers(PathRequest.toH2Console()).permitAll() // h2-console is a servlet and NOT recommended for a production
                         .requestMatchers(HttpMethod.OPTIONS,"/**")
                         .permitAll()
                         .anyRequest()
@@ -75,23 +72,41 @@ public class JwtSecurityConfig {
 
                 .build();
     }
-/*
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000"); // Allow specific origin
-        configuration.addAllowedMethod("*"); // Allow all HTTP methods
-        configuration.addAllowedHeader("*"); // Allow all headers
-        configuration.setAllowCredentials(true); // Allow sending credentials (cookies, auth headers)
+     */
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Apply to all paths
-        return source;
-    }
-*/
     @Bean
-    public AuthenticationManager authenticationManager(
-            UserDetailsService userDetailsService) {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity
+                .csrf(AbstractHttpConfigurer::disable) // (1)
+                .sessionManagement(
+                        session ->
+                                session.sessionCreationPolicy(
+                                        SessionCreationPolicy.STATELESS)) // (2)
+                .authorizeHttpRequests(
+                        auth ->
+                                auth.requestMatchers("/", //#CHANGE
+                                                "/authenticate", "/actuator", "/actuator/*")
+                                        .permitAll()
+                                        .requestMatchers("/h2-console/**")
+                                        .permitAll()
+                                        .requestMatchers(HttpMethod.OPTIONS, "/**")
+                                        .permitAll()
+                                        .anyRequest()
+                                        .authenticated()) // (3)
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults())) // (4)
+                .exceptionHandling(
+                        (ex) ->
+                                ex.authenticationEntryPoint(
+                                                new BearerTokenAuthenticationEntryPoint())
+                                        .accessDeniedHandler(
+                                                new BearerTokenAccessDeniedHandler()))
+                .httpBasic(withDefaults()) // (5)
+                .headers(header -> header.frameOptions(frameOptionsConfig -> frameOptionsConfig.sameOrigin()))
+                .build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
         var authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userDetailsService);
         return new ProviderManager(authenticationProvider);
@@ -107,6 +122,28 @@ public class JwtSecurityConfig {
 
         return new InMemoryUserDetailsManager(user);
     }
+
+/*
+    @Bean
+    public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
+
+        UserDetails userDetails1 = getUserDetails("username", "kibria");
+        UserDetails userDetails2 = getUserDetails("azim", "123");
+
+        return new InMemoryUserDetailsManager(userDetails1, userDetails2);
+    }
+
+    private UserDetails getUserDetails(String username, String password) {
+
+        UserDetails userDetails = User.withUsername(username)
+                .password("{noop}"+ password)
+                .authorities("read")
+                .roles("USER")
+                .build();
+
+        return userDetails;
+    }
+*/
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
