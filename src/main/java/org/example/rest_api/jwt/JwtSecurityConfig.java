@@ -123,28 +123,6 @@ public class JwtSecurityConfig {
         return new InMemoryUserDetailsManager(user);
     }
 
-/*
-    @Bean
-    public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
-
-        UserDetails userDetails1 = getUserDetails("username", "kibria");
-        UserDetails userDetails2 = getUserDetails("azim", "123");
-
-        return new InMemoryUserDetailsManager(userDetails1, userDetails2);
-    }
-
-    private UserDetails getUserDetails(String username, String password) {
-
-        UserDetails userDetails = User.withUsername(username)
-                .password("{noop}"+ password)
-                .authorities("read")
-                .roles("USER")
-                .build();
-
-        return userDetails;
-    }
-*/
-
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
         JWKSet jwkSet = new JWKSet(rsaKey());
