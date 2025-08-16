@@ -114,13 +114,21 @@ public class JwtSecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        UserDetails user = User.withUsername("username")
-                .password("{noop}kibria")
+        UserDetails userDetails1 = getUserDetails("username", "kibria");
+        UserDetails userDetails2 = getUserDetails("azim", "123");
+
+        return new InMemoryUserDetailsManager(userDetails1, userDetails2);
+    }
+
+    private UserDetails getUserDetails(String username, String password) {
+
+        UserDetails userDetails = User.withUsername(username)
+                .password("{noop}"+ password)
                 .authorities("read")
                 .roles("USER")
                 .build();
 
-        return new InMemoryUserDetailsManager(user);
+        return userDetails;
     }
 
     @Bean
