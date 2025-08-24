@@ -1,7 +1,9 @@
 package org.example.rest_api.jwt_security;
 
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -29,6 +31,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/api/hello", "/h2-console/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .headers(h -> h.frameOptions(frame -> frame.disable())) // for H2 console
